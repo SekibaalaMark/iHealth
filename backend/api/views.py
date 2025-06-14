@@ -102,6 +102,53 @@ class ChildVerificationAPIView(APIView):
 
 
 
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth
+from rest_framework.permissions import IsAuthenticated
+from datetime import date
+class CDOBillingSummaryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+
+        if user.role != 'CDO':
+            return Response({"detail": "Access denied. Only CDOs can view billing summary."}, status=403)
+
+        current_year = date.today().year
+
+        # All medical records for this CDO's center and this year
+        records = MedicalRecord.objects.filter(
+            child__center_number=user.center_number,
+            date_of_visit__year=current_year
+        )
+
+        # Total for the whole year
+        total_yearly_bill = records.aggregate(total=Sum('hospital_bill'))['total'] or 0
+
+        # Group by month
+        monthly_totals = (
+            records
+            .annotate(month=TruncMonth('date_of_visit'))
+            .values('month')
+            .annotate(total=Sum('hospital_bill'))
+            .order_by('month')
+        )
+
+        # Format response
+        monthly_data = {
+            entry['month'].strftime('%B'): entry['total']
+            for entry in monthly_totals
+        }
+
+        return Response({
+            "year": current_year,
+            "total_yearly_bill": total_yearly_bill,
+            "monthly_totals": monthly_data
+        })
+
+
+
 
 class LoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
