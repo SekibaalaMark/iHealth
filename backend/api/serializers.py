@@ -150,3 +150,22 @@ class LoginSerializer(serializers.Serializer):
         attrs['center_number'] = user.center_number
 
         return attrs
+
+
+
+class MedicalRecordListSerializer(serializers.ModelSerializer):
+    child_name = serializers.CharField(source='child.name', read_only=True)
+    child_number = serializers.CharField(source='child.child_number', read_only=True)
+    hospital_name = serializers.CharField(source='hospital.username', read_only=True)
+
+    class Meta:
+        model = MedicalRecord
+        fields = [
+            'id',
+            'child_name',
+            'child_number',
+            'hospital_name',
+            'date_of_visit',
+            'disease_description',
+            'hospital_bill',
+        ]

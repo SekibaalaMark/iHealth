@@ -157,3 +157,15 @@ class LoginAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+class MedicalRecordListAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        center_number = request.user.center_number
+        medical_records = MedicalRecord.objects.filter(child__center_number=center_number)
+        serializer = MedicalRecordListSerializer(medical_records, many=True)
+        return Response(serializer.data)
