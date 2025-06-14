@@ -59,10 +59,15 @@ class CreateChildAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+from rest_framework.permissions import BasePermission
+
+class IsHospitalUser(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role == 'Hospital'
 
 
 class MedicalRecordCreateAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsHospitalUser]
 
     def post(self, request, *args, **kwargs):
         # Ensure only users with the Hospital role can access
@@ -74,5 +79,34 @@ class MedicalRecordCreateAPIView(APIView):
         if serializer.is_valid():
             serializer.save()  # This calls the create method of the serializer
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+class ChildVerificationAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        if request.user.role != 'Hospital':
+            return Response({"detail": "Only hospital users can verify child numbers."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ChildVerificationSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+class LoginAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = LoginSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
