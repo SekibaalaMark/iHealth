@@ -1,11 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
-from rest_framework import generics, status
+from rest_framework import generics, status,permissions
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.permissions import IsAuthenticated,AllowAny
-
+from rest_framework.permissions import BasePermission
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth
+from rest_framework.permissions import IsAuthenticated
+from datetime import date
 #User = get_user_model()
 
 
@@ -31,30 +35,6 @@ class UserRegistrationView(APIView):
                 }
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
-
-'''
-class RegisterUserView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = UserRegistrationSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-
-        return Response({
-            "message": "User registered successfully.",
-            "user": {
-                "username": user.username,
-                "email": user.email,
-                "role": user.role,
-                "center_number": user.center_number
-            }
-        }, status=status.HTTP_201_CREATED)
-'''
-
-
 
 
 
@@ -92,8 +72,7 @@ def login(request):
 
 
 
-from rest_framework.views import APIView
-from rest_framework import status, permissions
+
 class IsCDOHealth(permissions.BasePermission):
     """
     Allow access only to users with the 'CDO_HEALTH' role.
@@ -116,7 +95,7 @@ class CreateChildAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-from rest_framework.permissions import BasePermission
+
 
 class IsHospitalUser(BasePermission):
     def has_permission(self, request, view):
@@ -159,17 +138,14 @@ class ChildVerificationAPIView(APIView):
 
 
 
-from django.db.models import Sum
-from django.db.models.functions import TruncMonth
-from rest_framework.permissions import IsAuthenticated
-from datetime import date
+
 class CDOBillingSummaryAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         user = request.user
 
-        if user.role != 'CDO':
+        if user.role != 'CDO_HEALTH':
             return Response({"detail": "Access denied. Only CDOs can view billing summary."}, status=403)
 
         current_year = date.today().year
@@ -205,21 +181,8 @@ class CDOBillingSummaryAPIView(APIView):
         })
 
 
-
-
-class LoginAPIView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = LoginSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
 class MedicalRecordListAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsCDOHealth]
 
     def get(self, request):
         center_number = request.user.center_number

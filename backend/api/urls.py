@@ -8,4 +8,5 @@ urlpatterns = [
     path('login/', login, name='login'),
     path('create-child/',CreateChildAPIView.as_view(),name='create-child'),
     path('verify-child/',ChildVerificationAPIView.as_view(),name='verify-child'),
+    path('medical-records/',MedicalRecordListAPIView.as_view(),name='medical_lists'),
 ]
