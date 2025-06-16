@@ -36,7 +36,7 @@ class MedicalRecord(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE)
     #hospital = models.CharField(max_length=200)
     hospital = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, limit_choices_to={'role': 'Hospital'})
-    date_of_visit = models.DateField()
+    date_of_visit = models.DateField(auto_now_add=True)
     disease_description = models.TextField()
     hospital_bill = models.DecimalField(max_digits=10, decimal_places=2)
 

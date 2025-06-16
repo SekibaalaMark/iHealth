@@ -14,7 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+from datetime import timedelta
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -132,4 +132,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+}
+
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),  # Set access token expiry time
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=2),     # Set refresh token expiry time
+
+    'BLACKLIST_AFTER_ROTATION': True,  # Optional: Blacklist the old refresh token after a new one is issued
+    'TOKEN_BLACKLIST': True,  # Enable token blacklisting
 }

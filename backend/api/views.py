@@ -3,12 +3,40 @@ from rest_framework.response import Response
 from .serializers import *
 from rest_framework import generics, status
 from django.contrib.auth import get_user_model
+from rest_framework.decorators import api_view,permission_classes
+from rest_framework.permissions import IsAuthenticated,AllowAny
 
-User = get_user_model()
+#User = get_user_model()
 
+
+class UserRegistrationView(APIView):
+    def post(self,request):
+        data = request.data 
+        serializer = UserRegistrationSerializer(data=data)
+        if serializer.is_valid():
+            validated_data = serializer.validated_data
+            password = validated_data.pop('password')
+            validated_data.pop('password2')
+            
+            user = CustomUser(**validated_data)
+            user.set_password(password)
+            user.save()
+
+            
+
+            return Response({
+                "message": "User  Created Successfully",
+                'data': validated_data,
+                "tokens": {
+                }
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+
+'''
 class RegisterUserView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = RegisterUserSerializer
+    queryset = CustomUser.objects.all()
+    serializer_class = UserRegistrationSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -24,14 +52,43 @@ class RegisterUserView(generics.CreateAPIView):
                 "center_number": user.center_number
             }
         }, status=status.HTTP_201_CREATED)
+'''
 
 
-class LoginView(APIView):
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Allow anyone to access this view
+def login(request):
+    serializer = LoginSerializer2(data=request.data)
+    if serializer.is_valid():
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
+        
+        
+        user = authenticate(username=username, password=password)
+        if user is not None:
+        # Generate tokens
+            refresh = RefreshToken.for_user(user)
+            
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'success': True,
+                'data':{
+                'authenticated':True,
+                    'role':user.role,'email':user.email,'username':user.username
+                },
+
+                'message': 'Login successful'
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({'success': False, 'message': 'Invalid credentials','authenticated':False}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 
 
 

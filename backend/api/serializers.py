@@ -3,37 +3,80 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from .models import *
 
-User = get_user_model()
 
-class RegisterUserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, required=True)
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password2 = serializers.CharField(write_only=True)
 
     class Meta:
-        model = User
-        fields = ('username', 'email', 'password', 'password2', 'role', 'center_number')
+        model = CustomUser 
+        fields = ['id','email', 'username', 'password', 'password2','role','center_number']
+        extra_kwargs = {
+            'password': {'write_only': True, 'required': True},  # Password is required and write-only
+            'email': {'required': True},  # Email is required
+            'username': {'required': True},  # Username is required
+            'center_number': {'required': True},  # First name is required
+            'last_name': {'required': True},  # Last name is required
+            'role':{'required':True},
+            #'staff_id_or_student_no':{'required':True},
+        }
 
-    def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Password fields didn’t match."})
+    def validate(self, data):
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+        password2 = data.get('password2')
+        role = data.get('role')
+        center_number=data.get('center_number')
+        #staff_id_or_student_no = data.get("staff_id_or_student_no")
 
-        if not attrs.get('center_number'):
-            raise serializers.ValidationError({"center_number": "This field is required for all users."})
+        # Check if username already exists
+        if username and CustomUser .objects.filter(username=username).exists():
+            raise serializers.ValidationError('Username already exists')
+        
+        if role not in dict(CustomUser .ROLE_CHOICES):
+            raise serializers.ValidationError("Invalid role selected")
 
-        return attrs
+
+            
+        if role == 'CDO_HEALTH':
+            if center_number and CustomUser .objects.filter(center_number=center_number).exists():
+                raise serializers.ValidationError('CDO health from this center already exists')
+
+        
+        if '@' not in email or email.split('@')[1] != 'gmail.com':
+            raise serializers.ValidationError('Only Gmail accounts are allowed...')
+        
+        # Check if email already exists
+        if email and CustomUser .objects.filter(email=email).exists():
+            raise serializers.ValidationError("Email already exists")
+        
+        if len(password) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long")
+        
+        if len(password2) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long")
+
+        
+        # Check if password and password confirmation match
+        if password != password2:
+            raise serializers.ValidationError("Passwords do not match")
+        
+        return data
 
     def create(self, validated_data):
+        # Remove password confirmation from validated data
         validated_data.pop('password2')
-        user = User(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            role=validated_data['role'],
-            center_number=validated_data['center_number']
-        )
-        user.set_password(validated_data['password'])
+        user = CustomUser (**validated_data)
+        user.set_password(validated_data['password'])  # Hash the password
         user.save()
         return user
+    
 
+
+class LoginSerializer2(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
 
 
 
@@ -58,8 +101,13 @@ class MedicalRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MedicalRecord
-        fields = ['id', 'child_number', 'child', 'hospital', 'date_of_visit', 'disease_description', 'hospital_bill']
-        read_only_fields = ['child', 'hospital']
+        fields = ['id', 'child_number', 'child', 'hospital', 'disease_description', 'hospital_bill']
+        read_only_fields = ['child', 'hospital','date_of_visit']
+        extra_kwargs={
+            'child_number':{'required':True},
+            'disease_description':{'required':True},
+            'hospital_bill':{'required':True}
+        }
 
     def validate_child_number(self, value):
         try:
