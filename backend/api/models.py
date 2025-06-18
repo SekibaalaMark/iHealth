@@ -23,15 +23,27 @@ class CustomUser(AbstractUser):
 
 
 
+from django.db import models
+from datetime import date
+
 class Child(models.Model):
     name = models.CharField(max_length=100)
     child_number = models.CharField(max_length=20, unique=True)
     center_number = models.CharField(max_length=6)
     photo = models.ImageField(upload_to='child_photos/')
     date_added = models.DateTimeField(auto_now_add=True)
+    
+    date_of_birth = models.DateField()  # New field for date of birth
+
+    @property
+    def age(self):
+        today = date.today()
+        dob = self.date_of_birth
+        return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
 
     def __str__(self):
         return f"{self.name} - {self.child_number}"
+
 
 
 class MedicalRecord(models.Model):

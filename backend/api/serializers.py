@@ -83,9 +83,10 @@ class LoginSerializer2(serializers.Serializer):
 
 
 class ChildSerializer(serializers.ModelSerializer):
+    age = serializers.ReadOnlyField()  # Since it's a property
     class Meta:
         model = Child
-        fields = ['id', 'name', 'child_number', 'center_number', 'photo', 'date_added']
+        fields = ['id', 'name', 'child_number', 'center_number', 'photo', 'date_added','date_of_birth','age']
         read_only_fields = ['date_added']
 
     def validate_child_number(self, value):
@@ -161,14 +162,15 @@ class ChildVerificationSerializer(serializers.Serializer):
         child = self.validated_data['child']
         return {
             "name": child.name,
-            "photo": child.photo.url if child.photo else None
+            "photo": child.photo.url if child.photo else None,
+            "age":child.age
         }
 
 
-from rest_framework import serializers
+
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import CustomUser
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -219,3 +221,6 @@ class MedicalRecordListSerializer(serializers.ModelSerializer):
             'disease_description',
             'hospital_bill',
         ]
+
+
+
