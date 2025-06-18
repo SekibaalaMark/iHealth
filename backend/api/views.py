@@ -398,3 +398,30 @@ class DeleteChildView(APIView):
 
         child.delete()
         return Response({"message": "Child deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+class UpdateChildView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, child_number):
+        user = request.user
+
+        if user.role != 'CDO_HEALTH':
+            return Response({"detail": "You are not authorized to update children."}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            child = Child.objects.get(child_number=child_number)
+        except Child.DoesNotExist:
+            return Response({"detail": "Child not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if child.center_number != user.center_number:
+            return Response({"detail": "You can only update children from your own center."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ChildUpdateSerializer(child, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Child updated successfully.", "child": serializer.data}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

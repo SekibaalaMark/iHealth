@@ -224,3 +224,7 @@ class MedicalRecordListSerializer(serializers.ModelSerializer):
 
 
 
+class ChildUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Child
+        fields = ['name', 'photo', 'date_of_birth']  # Updatable fields only

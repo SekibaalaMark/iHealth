@@ -13,4 +13,5 @@ urlpatterns = [
     path('disease-stats/', YearDiseaseStatsAPIView.as_view(), name='disease-stats'),
     path('disease-stats/', MonthDiseaseStatsAPIView.as_view(), name='disease-stats'),
     path('delete-child/<str:child_number>/', DeleteChildView.as_view(), name='delete-child'),
+    path('update-child/<str:child_number>/', UpdateChildView.as_view(), name='update-child'),
 ]
