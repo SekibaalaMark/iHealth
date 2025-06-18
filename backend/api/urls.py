@@ -10,4 +10,7 @@ urlpatterns = [
     path('verify-child/',ChildVerificationAPIView.as_view(),name='verify-child'),
     path('medical-records/',MedicalRecordListAPIView.as_view(),name='medical_lists'),
     path('verify-email/',ConfirmEmailView.as_view(),name='verify-email'),
+    path('disease-stats/', YearDiseaseStatsAPIView.as_view(), name='disease-stats'),
+    path('disease-stats/', MonthDiseaseStatsAPIView.as_view(), name='disease-stats'),
+    path('delete-child/<str:child_number>/', DeleteChildView.as_view(), name='delete-child'),
 ]

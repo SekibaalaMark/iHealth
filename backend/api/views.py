@@ -310,3 +310,91 @@ class MedicalRecordListAPIView(APIView):
         medical_records = MedicalRecord.objects.filter(child__center_number=center_number)
         serializer = MedicalRecordListSerializer(medical_records, many=True)
         return Response(serializer.data)
+
+
+from django.db.models import Count
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+class YearDiseaseStatsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        if user.role != 'CDO_HEALTH':
+            return Response({"detail": "Only CDO_HEALTH users can access this data."}, status=403)
+
+        center_number = user.center_number
+
+        # Filter by child's center number and group by disease
+        stats = (
+            MedicalRecord.objects
+            .filter(child__center_number=center_number)
+            .values('disease_description')
+            .annotate(count=Count('disease_description'))
+            .order_by('-count')
+        )
+
+        return Response({
+            "center": center_number,
+            "total_diseases_reported": sum(item['count'] for item in stats),
+            "disease_statistics": stats
+        })
+
+
+
+from django.db.models import Count
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+class MonthDiseaseStatsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        if user.role != 'CDO_HEALTH':
+            return Response({"detail": "Only CDO_HEALTH users can access this data."}, status=403)
+
+        center_number = user.center_number
+
+        # Filter by child's center number and group by disease
+        stats = (
+            MedicalRecord.objects
+            .filter(child__center_number=center_number)
+            .values('disease_description')
+            .annotate(count=Count('disease_description'))
+            .order_by('-count')
+        )
+
+        return Response({
+            "center": center_number,
+            "total_diseases_reported": sum(item['count'] for item in stats),
+            "disease_statistics": stats
+        })
+
+
+
+
+class DeleteChildView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, child_number):
+        user = request.user
+
+        if user.role != 'CDO_HEALTH':
+            return Response({"detail": "You are not authorized to delete children."}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            child = Child.objects.get(child_number=child_number)
+        except Child.DoesNotExist:
+            return Response({"detail": "Child not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if child.center_number != user.center_number:
+            return Response({"detail": "You can only delete children from your own center."}, status=status.HTTP_403_FORBIDDEN)
+
+        child.delete()
+        return Response({"message": "Child deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
