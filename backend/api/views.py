@@ -153,6 +153,76 @@ class IsHospitalUser(BasePermission):
         return request.user.is_authenticated and request.user.role == 'Hospital'
 
 
+from django.core.mail import send_mail
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
+
+
+
+class MedicalRecordCreateAPIView(APIView):
+    permission_classes = [IsHospitalUser]
+
+    def post(self, request, *args, **kwargs):
+        if request.user.role != 'Hospital':
+            return Response({"detail": "You are not authorized to perform this action."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        serializer = MedicalRecordSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            medical_record = serializer.save()
+
+            # Get child's center_number
+            child = medical_record.child
+            center_number = child.center_number
+
+            # Find CDO_HEALTH assigned to this center
+            try:
+                cdo = CustomUser.objects.get(role='CDO_HEALTH', center_number=center_number)
+            except CustomUser.DoesNotExist:
+                return Response({
+                    "detail": f"No CDO_HEALTH found for center {center_number}."
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            # Email content setup
+            subject = "New Medical Record Submitted"
+            message = f'''
+                New Medical Record
+                {child.name} {child.child_number} has been admitted at {request.user.username}, on {medical_record.date_of_visit}
+                Suffering from {medical_record.disease_description}
+                Medical bill : {medical_record.hospital_bill}UGX.
+                Mobile CDO health
+                Thank you
+                please don't reply to this Email
+            '''
+
+
+
+            send_mail(
+                    subject,
+                    message,  # plain text message (required)
+                    settings.EMAIL_HOST_USER,
+                    [cdo.email],
+                    fail_silently=False
+                    )
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+"""
+    fields = ['id', 'child_number', 'child', 'hospital', 'disease_description', 'hospital_bill']
+        read_only_fields = ['child', 'hospital','date_of_visit']
+        extra_kwargs={
+            'child_number':{'required':True},
+            'disease_description':{'required':True},
+            'hospital_bill':{'required':True}
+        }
+
+"""
+
+'''
 class MedicalRecordCreateAPIView(APIView):
     permission_classes = [IsHospitalUser]
 
@@ -168,7 +238,7 @@ class MedicalRecordCreateAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+'''
 
 
 
