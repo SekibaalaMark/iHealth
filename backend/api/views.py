@@ -13,28 +13,76 @@ from datetime import date
 #User = get_user_model()
 
 
+# views.py
+
+import random
+from django.core.mail import send_mail
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import UserRegistrationSerializer
+from .models import CustomUser
+from django.conf import settings
+
 class UserRegistrationView(APIView):
-    def post(self,request):
+    def post(self, request):
         data = request.data 
         serializer = UserRegistrationSerializer(data=data)
         if serializer.is_valid():
             validated_data = serializer.validated_data
             password = validated_data.pop('password')
             validated_data.pop('password2')
-            
+
+            # Generate 6-digit confirmation code
+            confirmation_code = str(random.randint(100000, 999999))
+
+            # Create the user with the code and inactive status
             user = CustomUser(**validated_data)
             user.set_password(password)
+            user.confirmation_code = confirmation_code
+            user.is_verified = False
             user.save()
 
-            
+            # Send the confirmation code via email
+            send_mail(
+                subject='Your Confirmation Code',
+                message=f'Your confirmation code is: {confirmation_code}',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
 
             return Response({
-                "message": "User  Created Successfully",
-                'data': validated_data,
-                "tokens": {
-                }
+                "message": "User created successfully. Check your email for the confirmation code.",
+                "email": user.email
             }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# views.py
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+class ConfirmEmailView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        code = request.data.get('code')
+
+        try:
+            user = CustomUser.objects.get(email=email)
+            if user.confirmation_code == code:
+                user.is_verified = True
+                user.confirmation_code = None  # Clear code after verification
+                user.save()
+                return Response({'message': 'Email confirmed successfully.'})
+            else:
+                return Response({'error': 'Invalid confirmation code.'}, status=400)
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'User not found.'}, status=404)
+
 
 
 
@@ -49,10 +97,11 @@ def login(request):
         
         user = authenticate(username=username, password=password)
         if user is not None:
+            if user.is_verified == True:
         # Generate tokens
-            refresh = RefreshToken.for_user(user)
+                refresh = RefreshToken.for_user(user)
             
-            return Response({
+                return Response({
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
                 'success': True,
@@ -63,6 +112,8 @@ def login(request):
 
                 'message': 'Login successful'
             }, status=status.HTTP_200_OK)
+            else:
+                return Response({'success':False,'message':'verify your email','authenticated':False},status=status.HTTP_401_UNAUTHORIZED)
         else:
             return Response({'success': False, 'message': 'Invalid credentials','authenticated':False}, status=status.HTTP_401_UNAUTHORIZED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

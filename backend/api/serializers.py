@@ -5,20 +5,23 @@ from .models import *
 
 
 
+import random
+from rest_framework import serializers
+from .models import CustomUser
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(write_only=True)
 
     class Meta:
         model = CustomUser 
-        fields = ['id','email', 'username', 'password', 'password2','role','center_number']
+        fields = ['id', 'email', 'username', 'password', 'password2', 'role', 'center_number', 'is_verified']
         extra_kwargs = {
-            'password': {'write_only': True, 'required': True},  # Password is required and write-only
-            'email': {'required': True},  # Email is required
-            'username': {'required': True},  # Username is required
-            'center_number': {'required': True},  # First name is required
-            'last_name': {'required': True},  # Last name is required
-            'role':{'required':True},
-            #'staff_id_or_student_no':{'required':True},
+            'password': {'write_only': True, 'required': True},
+            'email': {'required': True},
+            'username': {'required': True},
+            'center_number': {'required': True},
+            'role': {'required': True},
+            'is_verified': {'read_only': True},
         }
 
     def validate(self, data):
@@ -27,51 +30,50 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         password = data.get('password')
         password2 = data.get('password2')
         role = data.get('role')
-        center_number=data.get('center_number')
-        #staff_id_or_student_no = data.get("staff_id_or_student_no")
+        center_number = data.get('center_number')
 
-        # Check if username already exists
-        if username and CustomUser .objects.filter(username=username).exists():
+        if CustomUser.objects.filter(username=username).exists():
             raise serializers.ValidationError('Username already exists')
-        
-        if role not in dict(CustomUser .ROLE_CHOICES):
+
+        if role not in dict(CustomUser.ROLE_CHOICES):
             raise serializers.ValidationError("Invalid role selected")
 
-
-            
         if role == 'CDO_HEALTH':
-            if center_number and CustomUser .objects.filter(center_number=center_number).exists():
+            if center_number and CustomUser.objects.filter(center_number=center_number).exists():
                 raise serializers.ValidationError('CDO health from this center already exists')
 
-        
-        if '@' not in email or email.split('@')[1] != 'gmail.com':
-            raise serializers.ValidationError('Only Gmail accounts are allowed...')
-        
-        # Check if email already exists
-        if email and CustomUser .objects.filter(email=email).exists():
+        if '@' not in email or not email.endswith('gmail.com'):
+            raise serializers.ValidationError('Only Gmail accounts are allowed.')
+
+        if CustomUser.objects.filter(email=email).exists():
             raise serializers.ValidationError("Email already exists")
-        
-        if len(password) < 8:
-            raise serializers.ValidationError("Password must be at least 8 characters long")
-        
-        if len(password2) < 8:
+
+        if len(password) < 8 or len(password2) < 8:
             raise serializers.ValidationError("Password must be at least 8 characters long")
 
-        
-        # Check if password and password confirmation match
         if password != password2:
             raise serializers.ValidationError("Passwords do not match")
-        
+
         return data
 
     def create(self, validated_data):
-        # Remove password confirmation from validated data
         validated_data.pop('password2')
-        user = CustomUser (**validated_data)
-        user.set_password(validated_data['password'])  # Hash the password
+        password = validated_data.pop('password')
+
+        # Generate a random 6-digit confirmation code
+        confirmation_code = str(random.randint(100000, 999999))
+
+        user = CustomUser(
+            **validated_data,
+            is_verified=False,
+            confirmation_code=confirmation_code
+        )
+        user.set_password(password)
         user.save()
+
+        # Email sending should happen in the view after this serializer is used
         return user
-    
+
 
 
 class LoginSerializer2(serializers.Serializer):
