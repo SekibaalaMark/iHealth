@@ -7,8 +7,8 @@
 ## 🚀 Features
 
 - 🧑‍⚕️ **Two User Roles**:
-  - `CDO_HEALTH`: Manages children records, monitors bills, views disease analysis.
-  - `HOSPITAL`: Verifies children, treats them, and submits medical reports with billing.
+  - `CDO_HEALTH`: Adds children in the system, Manages children records, monitors bills, views disease analysis.
+  - `HOSPITAL`: Verifies children, treats them after verifying, and submits medical reports with billing.
   
 - 🧒 **Child Verification at Hospital**:
   - Hospital staff enter a child's number.
@@ -17,7 +17,7 @@
 
 - 💊 **Treatment & Billing**:
   - Hospital logs treatment details and the hospital bill.
-  - Bill appears on the CDO's dashboard.
+  - Bill appears on the CDO's dashboard and CDO as well receives an EMAIL about the bill info.
 
 - 📊 **Analytics for CDO**:
   - Monthly and yearly bill totals.
@@ -42,12 +42,12 @@
 
 1. **CDO_HEALTH**:
    - Registers children at their center.
-   - Can view children list, total bills, and disease trends.
+   - Can view children list, total bills, and disease trends,delete children,update children.
 
 2. **HOSPITAL**:
    - Searches for a child by child number.
    - Verifies profile picture.
-   - Submits treatment details and bill.
+   - Provides treatment, Submits treatment details and bill.
 
 3. **Dashboard**:
    - CDOs see a breakdown of:
