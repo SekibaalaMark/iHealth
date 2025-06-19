@@ -5,6 +5,10 @@ import uuid
 # ------------------------------
 # Custom User with roles
 # ------------------------------
+
+
+from django.utils import timezone
+
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
         ('CDO_HEALTH', 'CDO HEALTH'),
@@ -16,6 +20,7 @@ class CustomUser(AbstractUser):
     email=models.EmailField(unique=True)
     is_verified = models.BooleanField(default=False)
     confirmation_code = models.CharField(max_length=6, blank=True, null=True)
+    reset_code_sent_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.username} ({self.role})"
@@ -25,6 +30,9 @@ class CustomUser(AbstractUser):
 
 from django.db import models
 from datetime import date
+
+
+
 
 class Child(models.Model):
     name = models.CharField(max_length=100)

@@ -10,6 +10,7 @@ from django.db.models import Sum
 from django.db.models.functions import TruncMonth
 from rest_framework.permissions import IsAuthenticated
 from datetime import date
+from django.utils import timezone
 #User = get_user_model()
 
 
@@ -40,6 +41,7 @@ class UserRegistrationView(APIView):
             user = CustomUser(**validated_data)
             user.set_password(password)
             user.confirmation_code = confirmation_code
+            user.reset_code_sent_at = timezone.now()
             user.is_verified = False
             user.save()
 
@@ -61,10 +63,8 @@ class UserRegistrationView(APIView):
 
 
 # views.py
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from datetime import timedelta
+from django.utils import timezone
 
 class ConfirmEmailView(APIView):
     def post(self, request):
@@ -73,13 +73,22 @@ class ConfirmEmailView(APIView):
 
         try:
             user = CustomUser.objects.get(email=email)
-            if user.confirmation_code == code:
-                user.is_verified = True
-                user.confirmation_code = None  # Clear code after verification
-                user.save()
-                return Response({'message': 'Email confirmed successfully.'})
-            else:
+
+            # Check if code matches
+            if user.confirmation_code != code:
                 return Response({'error': 'Invalid confirmation code.'}, status=400)
+
+            # Check expiry (30 minutes)
+            if not user.reset_code_sent_at or timezone.now() > user.reset_code_sent_at + timedelta(minutes=30):
+                return Response({'error': 'This confirmation code has expired. Please request a new one.'}, status=400)
+            # Confirm email
+            user.is_verified = True
+            user.confirmation_code = None
+            user.reset_code_sent_at = None
+            user.save()
+
+            return Response({'message': 'Email confirmed successfully.'})
+
         except CustomUser.DoesNotExist:
             return Response({'error': 'User not found.'}, status=404)
 
@@ -425,3 +434,117 @@ class UpdateChildView(APIView):
             return Response({"message": "Child updated successfully.", "child": serializer.data}, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ResendConfirmationCodeView(APIView):
+    def post(self, request):
+        serializer = ResendConfirmationCodeSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            user = CustomUser.objects.get(email=email)
+
+            # Generate a new confirmation code
+            confirmation_code = str(random.randint(100000, 999999))
+            user.confirmation_code = confirmation_code
+            user.reset_code_sent_at = timezone.now()
+            user.save()
+
+            # Send confirmation code via email
+            send_mail(
+                subject='Your New Confirmation Code',
+                message=f'Your new confirmation code is: {confirmation_code}',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+
+            return Response({
+                "message": "Confirmation code resent. Please check your email.",
+                "email": email
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+# views.py
+class RequestPasswordResetView(APIView):
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            user = CustomUser.objects.get(email=email)
+
+            # Generate reset code
+            reset_code = str(random.randint(100000, 999999))
+            user.confirmation_code = reset_code  # reuse this field
+            user.reset_code_sent_at = timezone.now()
+            user.save()
+
+            # Send email
+            send_mail(
+                subject='Password Reset Code',
+                message=f'Your password reset code is: {reset_code}',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+
+            return Response({"message": "Reset code sent to email."}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class ResetPasswordView(APIView):
+    def post(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Password reset successful."}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            if not user.check_password(serializer.validated_data['old_password']):
+                return Response({"error": "Old password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
+
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response({"message": "Password changed successfully."})
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+class ResendPasswordResetCodeView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        try:
+            user = CustomUser.objects.get(email=email)
+            # Only allow resending if not verified or not recently reset
+
+            confirmation_code = str(random.randint(100000, 999999))
+            user.confirmation_code = confirmation_code
+            user.reset_code_sent_at = timezone.now()
+            user.save()
+
+            send_mail(
+                subject="Your New Password Reset Code",
+                message=f"Here is your new password reset code: {confirmation_code}",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[user.email],
+                fail_silently=False
+            )
+            return Response({"message": "A new password reset code has been sent to your email."}, status=status.HTTP_200_OK)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "No account with this email exists."}, status=status.HTTP_404_NOT_FOUND)
