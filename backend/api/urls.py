@@ -4,7 +4,7 @@ from .views import *
 urlpatterns = [
     path('medical-bills-sum/',CDOBillingSummaryAPIView.as_view(),name='bill_summary'),
     path('login/', login, name='login'),
-    path('create-child/',CreateChildAPIView.as_view(),name='create-child'),
+    path('register/',UserRegistrationView.as_view(),name='signup'),
     path('verify-child/',ChildVerificationAPIView.as_view(),name='verify-child'),
     path('medical-records/',MedicalRecordListAPIView.as_view(),name='medical_lists'),
     path('verify-email/',ConfirmEmailView.as_view(),name='verify-email'),
