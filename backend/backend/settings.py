@@ -150,11 +150,7 @@ SIMPLE_JWT = {
 
 
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173", # Example: Add your frontend URL
-]
-
+CORS_ALLOW_ALL_ORIGINS = True 
 CORS_ALLOW_HEADERS = [
     "accept",
     "authorization",
@@ -165,7 +161,7 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # Allow credentials (e.g., cookies, authorization headers) if needed
-CORS_ALLOW_CREDENTIALS = True
+#CORS_ALLOW_CREDENTIALS = True
 
 
 
