@@ -151,7 +151,8 @@ SIMPLE_JWT = {
 
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Example: Add your frontend URL
+    "http://localhost:3000",
+    "http://localhost:5173", # Example: Add your frontend URL
 ]
 
 CORS_ALLOW_HEADERS = [
