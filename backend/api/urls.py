@@ -17,4 +17,5 @@ urlpatterns = [
     path('change-password/',ChangePasswordView.as_view(),name='change-password'),
     path('resend-password-reset-code/', ResendPasswordResetCodeView.as_view(), name='resend-reset-code'),
     path('resend-confirmation-code/',ResendConfirmationCodeView.as_view(),name='resend-code1'),
+    path('create-medical-bill/',MedicalRecordCreateAPIView.as_view(),name='medical-bill-creation'),
 ]
