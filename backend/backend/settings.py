@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'api',
     
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
 ]
 
@@ -142,13 +143,18 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    # Don't set global permission classes for registration to work
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
 }
 
 
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),  # Set access token expiry time
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=2),     # Set refresh token expiry time
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=2),
+         # Set refresh token expiry time
 
     'BLACKLIST_AFTER_ROTATION': True,  # Optional: Blacklist the old refresh token after a new one is issued
     'TOKEN_BLACKLIST': True,  # Enable token blacklisting

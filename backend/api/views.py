@@ -1,21 +1,17 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
-from rest_framework import generics, status,permissions
+from rest_framework import generics, status, permissions
 from django.contrib.auth import get_user_model
-from rest_framework.decorators import api_view,permission_classes
-from rest_framework.permissions import IsAuthenticated,AllowAny
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.permissions import BasePermission
 from django.db.models import Sum
 from django.db.models.functions import TruncMonth
 from rest_framework.permissions import IsAuthenticated
 from datetime import date
 from django.utils import timezone
-#User = get_user_model()
-
-
-# views.py
-
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 import random
 from django.core.mail import send_mail
 from rest_framework.views import APIView
@@ -24,7 +20,70 @@ from rest_framework import status
 from .serializers import UserRegistrationSerializer
 from .models import CustomUser
 from django.conf import settings
+import logging
 
+logger = logging.getLogger(__name__)
+
+class UserRegistrationView(APIView):
+    permission_classes = [AllowAny]  # Add this line - this is crucial!
+    
+    def post(self, request):
+        logger.info(f"Registration request received")
+        logger.info(f"Request data: {request.data}")
+        
+        try:
+            data = request.data 
+            serializer = UserRegistrationSerializer(data=data)
+            
+            if serializer.is_valid():
+                validated_data = serializer.validated_data
+                password = validated_data.pop('password')
+                validated_data.pop('password2')
+                
+                # Generate 6-digit confirmation code
+                confirmation_code = str(random.randint(100000, 999999))
+                
+                # Create the user with the code and inactive status
+                user = CustomUser(**validated_data)
+                user.set_password(password)
+                user.confirmation_code = confirmation_code
+                user.reset_code_sent_at = timezone.now()
+                user.is_verified = False
+                user.save()
+                
+                logger.info(f"User created: {user.email}")
+                
+                # Send the confirmation code via email
+                try:
+                    send_mail(
+                        subject='Your Confirmation Code',
+                        message=f'Your confirmation code is: {confirmation_code}',
+                        from_email=settings.EMAIL_HOST_USER,
+                        recipient_list=[user.email],
+                        fail_silently=False,
+                    )
+                    logger.info(f"Confirmation email sent to: {user.email}")
+                except Exception as email_error:
+                    logger.error(f"Email sending failed: {str(email_error)}")
+                    # Don't fail registration if email fails
+                    pass
+                
+                return Response({
+                    "message": "User created successfully. Check your email for the confirmation code.",
+                    "email": user.email
+                }, status=status.HTTP_201_CREATED)
+            else:
+                logger.error(f"Serializer validation errors: {serializer.errors}")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            logger.error(f"Registration error: {str(e)}", exc_info=True)
+            return Response({
+                "error": "Registration failed",
+                "details": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+'''
 class UserRegistrationView(APIView):
     def post(self, request):
         data = request.data 
@@ -60,7 +119,7 @@ class UserRegistrationView(APIView):
             }, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+'''
 
 # views.py
 from datetime import timedelta
