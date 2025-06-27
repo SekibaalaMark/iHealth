@@ -83,6 +83,10 @@ class LoginSerializer2(serializers.Serializer):
 
 
 class ChildSerializer(serializers.ModelSerializer):
+    date_of_birth = serializers.DateField(
+        input_formats=['%d/%m/%Y'],  # Accepts DD/MM/YYYY
+        format='%d/%m/%Y'            # Also displays in this format
+    )
     age = serializers.ReadOnlyField()  # Since it's a property
     class Meta:
         model = Child
