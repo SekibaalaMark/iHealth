@@ -607,3 +607,22 @@ class ResendPasswordResetCodeView(APIView):
             return Response({"message": "A new password reset code has been sent to your email."}, status=status.HTTP_200_OK)
         except CustomUser.DoesNotExist:
             return Response({"error": "No account with this email exists."}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+
+class MedicalRecordsForCDO(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        if user.role != 'CDO_HEALTH':
+            return Response({'detail': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
+
+        # Filter medical records for children in the same center_number
+        records = MedicalRecord.objects.filter(child__center_number=user.center_number)
+
+        serializer = MedicalRecordListSerializer(records, many=True)
+        return Response(serializer.data)
