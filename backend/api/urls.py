@@ -26,6 +26,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('cdo/medical-records/', MedicalRecordsForCDO.as_view(), name='cdo-medical-records'),
     path("create-child/",CreateChildAPIView.as_view(),name="create-children"),
+    path('hospital-medical-records/', HospitalMedicalRecordsView.as_view(), name='hospital-medical-records'),
 ]
 
 

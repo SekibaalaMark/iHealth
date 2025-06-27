@@ -296,3 +296,15 @@ class ChangePasswordSerializer(serializers.Serializer):
         if data['new_password'] != data['confirm_password']:
             raise serializers.ValidationError("Passwords do not match.")
         return data
+    
+
+
+
+# serializers.py
+
+class HospitalMedicalRecordSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='child.name', read_only=True)
+
+    class Meta:
+        model = MedicalRecord
+        fields = ['name', 'date_of_visit', 'disease_description', 'hospital_bill']

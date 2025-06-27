@@ -626,3 +626,24 @@ class MedicalRecordsForCDO(APIView):
 
         serializer = MedicalRecordListSerializer(records, many=True)
         return Response(serializer.data)
+
+
+
+# views.py
+
+
+# views.py
+
+
+class HospitalMedicalRecordsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        if user.role != 'Hospital':
+            return Response({'detail': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+
+        records = MedicalRecord.objects.filter(hospital=user)
+        serializer = HospitalMedicalRecordSerializer(records, many=True)
+        return Response(serializer.data)
