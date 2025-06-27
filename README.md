@@ -29,7 +29,7 @@
 
 ### 🔹 Backend
 - **Django** & **Django REST Framework (DRF)**
-- PostgreSQL (or your preferred DB)
+- PostgreSQL 
 
 ### 🔹 Frontend
 - **React.js**
