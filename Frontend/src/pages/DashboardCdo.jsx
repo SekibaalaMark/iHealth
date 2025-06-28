@@ -19,6 +19,7 @@ import {
   Legend,
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import ChangePasswordModal from '../components/ChangePasswordModal';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 ChartJS.register(ChartDataLabels);
 
@@ -62,6 +63,7 @@ const DashboardCdo = () => {
     data: null,
     loaded: false,
   });
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
   const handleSidebarClick = (key) => {
     setSelected(key);
@@ -279,16 +281,16 @@ const DashboardCdo = () => {
       case "home":
         return (
           <>
-            <Typography variant="h4" sx={{ color: '#1565c0', fontWeight: 'bold', mb: 2 }}>
+            <Typography variant="h4" sx={{ color: '#fff', fontWeight: 'bold', mb: 2 }}>
               Analysis
             </Typography>
             {analysisState.loading && <Typography>Loading analysis...</Typography>}
             {analysisState.error && <Typography color="error">{analysisState.error}</Typography>}
             {analysisState.data && analysisState.data.disease_statistics && analysisState.data.disease_statistics.length > 0 && (
-              <Box sx={{ width: '100%', maxWidth: 600, mt: 3 }}>
+              <Box sx={{ width: '100%', height: { xs: 300, sm: 400, md: 500, lg: 600 }, maxWidth: { xs: '100vw', md: 900 }, mt: 3, background: '#fff', borderRadius: 4, boxShadow: 3, p: { xs: 1, sm: 2, md: 3 } }}>
                 {(() => {
                   const palette = [
-                    '#1976d2', '#26a69a', '#ffa726', '#ef5350', '#ab47bc', '#66bb6a', '#ff7043', '#29b6f6', '#ec407a', '#8d6e63',
+                    '#1976d2', '#42a5f5', '#64b5f6', '#90caf9', '#1565c0', '#00bcd4', '#ffb300', '#ef5350', '#ab47bc', '#66bb6a', '#ff7043', '#29b6f6', '#ec407a', '#8d6e63',
                   ];
                   const stats = analysisState.data.disease_statistics;
                   const barColors = stats.map((_, i) => palette[i % palette.length]);
@@ -311,20 +313,30 @@ const DashboardCdo = () => {
                       }}
                       options={{
                         responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
                           legend: { display: false },
-                          title: { display: true, text: 'Disease Statistics (Current Year)' },
+                          title: { display: true, text: 'Disease Statistics (Current Year)', color: '#0d47a1', font: { size: 18, weight: 'bold' } },
                           tooltip: {
                             backgroundColor: '#fff',
-                            titleColor: '#1976d2',
+                            titleColor: '#1565c0',
                             bodyColor: '#333',
-                            borderColor: '#1976d2',
+                            borderColor: '#1565c0',
                             borderWidth: 1,
                           },
                         },
                         scales: {
-                          x: { title: { display: true, text: 'Disease' } },
-                          y: { title: { display: true, text: 'Cases' }, beginAtZero: true },
+                          x: {
+                            title: { display: true, text: 'Disease', color: '#0d47a1', font: { weight: 'bold' } },
+                            ticks: { color: '#0d47a1', font: { weight: 'bold' } },
+                            grid: { color: 'rgba(21,101,192,0.08)' },
+                          },
+                          y: {
+                            title: { display: true, text: 'Cases', color: '#0d47a1', font: { weight: 'bold' } },
+                            ticks: { color: '#0d47a1', font: { weight: 'bold' } },
+                            grid: { color: 'rgba(21,101,192,0.08)' },
+                            beginAtZero: true,
+                          },
                         },
                         layout: { padding: 10 },
                         elements: {
@@ -334,6 +346,7 @@ const DashboardCdo = () => {
                           },
                         },
                       }}
+                      height={window.innerWidth < 600 ? 300 : window.innerWidth < 900 ? 400 : 500}
                     />
                   );
                 })()}
@@ -346,33 +359,63 @@ const DashboardCdo = () => {
         );
       case "add-child":
         return (
-          <Box sx={{ width: 350 }}>
+          <Box sx={{ width: '100%', maxWidth: 600, background: '#fff', borderRadius: 4, boxShadow: 3, p: { xs: 2, sm: 4 }, mx: 'auto' }}>
             <Typography variant="h5" sx={{ mb: 2 }}>Add Child</Typography>
             <form onSubmit={handleAddChildSubmit} encType="multipart/form-data">
               <Box sx={{ mb: 2 }}>
-                <label>Name</label>
+                <label style={{ fontWeight: 'bold', color: '#1565c0', marginBottom: 4, display: 'block' }}>Name</label>
                 <input
                   type="text"
                   name="name"
                   value={addChildState.name}
                   onChange={handleAddChildChange}
                   required
-                  style={{ width: '100%', padding: 8, marginTop: 4 }}
+                  style={{
+                    width: '100%',
+                    padding: 12,
+                    marginTop: 4,
+                    background: '#e3f2fd',
+                    border: '2px solid #90caf9',
+                    borderRadius: 8,
+                    color: '#1565c0',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    boxShadow: '0 1px 4px rgba(21,101,192,0.05)',
+                    outline: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#1565c0'}
+                  onBlur={e => e.target.style.borderColor = '#90caf9'}
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
-                <label>Child Number</label>
+                <label style={{ fontWeight: 'bold', color: '#1565c0', marginBottom: 4, display: 'block' }}>Child Number</label>
                 <input
                   type="text"
                   name="child_number"
                   value={addChildState.child_number}
                   onChange={handleAddChildChange}
                   required
-                  style={{ width: '100%', padding: 8, marginTop: 4 }}
+                  style={{
+                    width: '100%',
+                    padding: 12,
+                    marginTop: 4,
+                    background: '#e3f2fd',
+                    border: '2px solid #90caf9',
+                    borderRadius: 8,
+                    color: '#1565c0',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    boxShadow: '0 1px 4px rgba(21,101,192,0.05)',
+                    outline: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#1565c0'}
+                  onBlur={e => e.target.style.borderColor = '#90caf9'}
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
-                <label>Photo</label>
+                <label style={{ fontWeight: 'bold', color: '#1565c0', marginBottom: 4, display: 'block' }}>Photo</label>
                 <input
                   type="file"
                   name="photo"
@@ -380,11 +423,26 @@ const DashboardCdo = () => {
                   onChange={handleAddChildChange}
                   required
                   ref={fileInputRef}
-                  style={{ width: '100%', marginTop: 4 }}
+                  style={{
+                    width: '100%',
+                    padding: 12,
+                    marginTop: 4,
+                    background: '#e3f2fd',
+                    border: '2px solid #90caf9',
+                    borderRadius: 8,
+                    color: '#1565c0',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    boxShadow: '0 1px 4px rgba(21,101,192,0.05)',
+                    outline: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#1565c0'}
+                  onBlur={e => e.target.style.borderColor = '#90caf9'}
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
-                <label>Date of Birth</label>
+                <label style={{ fontWeight: 'bold', color: '#1565c0', marginBottom: 4, display: 'block' }}>Date of Birth</label>
                 <input
                   type="text"
                   name="date_of_birth"
@@ -392,7 +450,22 @@ const DashboardCdo = () => {
                   onChange={handleAddChildChange}
                   required
                   placeholder="DD/MM/YYYY"
-                  style={{ width: '100%', padding: 8, marginTop: 4 }}
+                  style={{
+                    width: '100%',
+                    padding: 12,
+                    marginTop: 4,
+                    background: '#e3f2fd',
+                    border: '2px solid #90caf9',
+                    borderRadius: 8,
+                    color: '#1565c0',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    boxShadow: '0 1px 4px rgba(21,101,192,0.05)',
+                    outline: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#1565c0'}
+                  onBlur={e => e.target.style.borderColor = '#90caf9'}
                 />
               </Box>
               {addChildState.error && (
@@ -415,8 +488,20 @@ const DashboardCdo = () => {
         );
       case "medical-records":
         return (
-          <Box sx={{ width: '100%', maxWidth: 900 }}>
-            <Typography variant="h4" sx={{ color: '#1565c0', fontWeight: 'bold', mb: 2 }}>
+          <Box sx={{ width: '100%', maxWidth: 1100, mx: 'auto', p: { xs: 1, sm: 3, md: 4 } }}>
+            <Typography
+              variant="h3"
+              sx={{
+                color: '#fff',
+                fontWeight: 900,
+                mb: 3,
+                letterSpacing: 1,
+                textShadow: '0 2px 8px rgba(21,101,192,0.25)',
+                borderBottom: '4px solid #7b1fa2',
+                display: 'inline-block',
+                pb: 1,
+              }}
+            >
               Medical Records
             </Typography>
             {medicalRecordsState.loading && <Typography>Loading...</Typography>}
@@ -428,24 +513,24 @@ const DashboardCdo = () => {
               <Box sx={{ overflowX: 'auto', mt: 2 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
                   <thead>
-                    <tr style={{ background: '#bbdefb' }}>
-                      <th style={{ padding: 8, border: '1px solid #90caf9' }}>Child Name</th>
-                      <th style={{ padding: 8, border: '1px solid #90caf9' }}>Child Number</th>
-                      <th style={{ padding: 8, border: '1px solid #90caf9' }}>Hospital Name</th>
-                      <th style={{ padding: 8, border: '1px solid #90caf9' }}>Date of Visit</th>
-                      <th style={{ padding: 8, border: '1px solid #90caf9' }}>Disease Description</th>
-                      <th style={{ padding: 8, border: '1px solid #90caf9' }}>Hospital Bill (UGX)</th>
+                    <tr style={{ background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)' }}>
+                      <th style={{ padding: 8, border: '1px solid #1976d2', color: '#fff' }}>Child Name</th>
+                      <th style={{ padding: 8, border: '1px solid #1976d2', color: '#fff' }}>Child Number</th>
+                      <th style={{ padding: 8, border: '1px solid #1976d2', color: '#fff' }}>Hospital Name</th>
+                      <th style={{ padding: 8, border: '1px solid #1976d2', color: '#fff' }}>Date of Visit</th>
+                      <th style={{ padding: 8, border: '1px solid #1976d2', color: '#fff' }}>Disease Description</th>
+                      <th style={{ padding: 8, border: '1px solid #1976d2', color: '#fff' }}>Hospital Bill (UGX)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {medicalRecordsState.records.map((rec, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid #e3f2fd' }}>
-                        <td style={{ padding: 8, border: '1px solid #90caf9' }}>{rec.child_name}</td>
-                        <td style={{ padding: 8, border: '1px solid #90caf9' }}>{rec.child_number}</td>
-                        <td style={{ padding: 8, border: '1px solid #90caf9' }}>{rec.hospital_name}</td>
-                        <td style={{ padding: 8, border: '1px solid #90caf9' }}>{rec.date_of_visit}</td>
-                        <td style={{ padding: 8, border: '1px solid #90caf9' }}>{rec.disease_description}</td>
-                        <td style={{ padding: 8, border: '1px solid #90caf9' }}>{rec.hospital_bill}</td>
+                      <tr key={idx} style={{ borderBottom: '1px solid #42a5f5', background: idx % 2 === 0 ? '#f4faff' : '#fff' }}>
+                        <td style={{ padding: 8, border: '1px solid #1976d2', color: '#1565c0', fontWeight: 500 }}>{rec.child_name}</td>
+                        <td style={{ padding: 8, border: '1px solid #1976d2', color: '#1565c0', fontWeight: 500 }}>{rec.child_number}</td>
+                        <td style={{ padding: 8, border: '1px solid #1976d2', color: '#1565c0', fontWeight: 500 }}>{rec.hospital_name}</td>
+                        <td style={{ padding: 8, border: '1px solid #1976d2', color: '#1565c0', fontWeight: 500 }}>{rec.date_of_visit}</td>
+                        <td style={{ padding: 8, border: '1px solid #1976d2', color: '#1565c0', fontWeight: 500 }}>{rec.disease_description}</td>
+                        <td style={{ padding: 8, border: '1px solid #1976d2', color: '#1565c0', fontWeight: 500 }}>{rec.hospital_bill}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -456,7 +541,7 @@ const DashboardCdo = () => {
         );
       case "medical-bill-summary":
         return (
-          <Box sx={{ width: '100%', maxWidth: 600 }}>
+          <Box sx={{ width: '100%', maxWidth: 600, background: '#fff', borderRadius: 4, boxShadow: 3, p: { xs: 2, sm: 4 }, mx: 'auto' }}>
             <Typography variant="h4" sx={{ color: '#1565c0', fontWeight: 'bold', mb: 2 }}>
               Medical Bill Summary
             </Typography>
@@ -523,21 +608,21 @@ const DashboardCdo = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#e3f2fd' }}>
+    <Box sx={{ display: 'flex', width: '100vw', height: '100vh', minHeight: '100vh', minWidth: '100vw', background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)' }}>
       {/* Sidebar */}
       <Box
         sx={{
           width: 250,
-          background: '#bbdefb',
+          background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 100%)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           py: 3,
-          boxShadow: 2,
+          boxShadow: 4,
         }}
       >
         <Box>
-          <Typography variant="h6" align="center" sx={{ mb: 3, color: '#1565c0', fontWeight: 'bold' }}>
+          <Typography variant="h6" align="center" sx={{ mb: 3, color: '#fff', fontWeight: 'bold', letterSpacing: 2, textShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
             CDO_HEALTH DASHBOARD
           </Typography>
           <List>
@@ -550,33 +635,54 @@ const DashboardCdo = () => {
                 sx={{
                   borderRadius: 2,
                   mb: 1,
-                  background: selected === option.key ? '#e3f2fd' : 'transparent',
-                  color: '#1565c0',
-                  '&:hover': { background: '#e3f2fd' },
+                  background: selected === option.key ? 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)' : 'transparent',
+                  color: selected === option.key ? '#fff' : '#bbdefb',
+                  boxShadow: selected === option.key ? 2 : 0,
+                  '&:hover': { background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)', color: '#fff' },
+                  transition: 'all 0.2s',
                 }}
               >
-                <ListItemIcon sx={{ color: '#1565c0' }}>{option.icon}</ListItemIcon>
+                <ListItemIcon sx={{ color: selected === option.key ? '#fff' : '#90caf9' }}>{option.icon}</ListItemIcon>
                 <ListItemText primary={option.label} />
               </ListItem>
             ))}
           </List>
         </Box>
         <Box sx={{ px: 2 }}>
-          <Divider sx={{ mb: 2 }} />
+          <Divider sx={{ mb: 2, bgcolor: '#90caf9' }} />
           <Button
-            variant="outlined"
-            color="error"
+            variant="contained"
             fullWidth
             startIcon={<LogoutIcon />}
             onClick={logout}
-            sx={{ mb: 1 }}
+            sx={{
+              mb: 1,
+              background: '#d32f2f',
+              color: '#fff',
+              fontWeight: 'bold',
+              '&:hover': { background: '#b71c1c', color: '#fff' },
+              borderColor: 'transparent',
+            }}
           >
             Logout
           </Button>
+          <Button
+            variant="outlined"
+            fullWidth
+            onClick={() => setChangePasswordOpen(true)}
+            sx={{ mb: 1, color: '#222', background: '#ffeb3b', borderColor: '#fbc02d', fontWeight: 'bold', '&:hover': { background: '#fbc02d', color: '#222', borderColor: '#fbc02d' } }}
+          >
+            Change Password
+          </Button>
         </Box>
       </Box>
+      <ChangePasswordModal
+        open={changePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
+        token={localStorage.getItem('accessToken')}
+      />
       {/* Main Content */}
-      <Box sx={{ flex: 1, p: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ flex: 1, p: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: 4, boxShadow: 2 }}>
         {renderContent()}
       </Box>
     </Box>

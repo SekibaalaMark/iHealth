@@ -40,7 +40,7 @@ const ConfirmEmail = () => {
     setIsLoading(true);
     try {
       await axios.post(
-        "https://ihealth-vhdl.onrender.com/api/resend-verification-code/",
+        "https://ihealth-vhdl.onrender.com/api/resend-confirmation-code/",
         {
           email: email,
         }

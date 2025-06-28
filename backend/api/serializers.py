@@ -164,10 +164,31 @@ class ChildVerificationSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         child = self.validated_data['child']
+        
+        # Debug: Print the photo field value
+        print(f"Child photo field: {child.photo}")
+        print(f"Child photo name: {child.photo.name if child.photo else 'None'}")
+        
+        # Handle photo URL construction
+        photo_url = None
+        if child.photo:
+            try:
+                # Use Django's built-in URL method which should return /media/child_photos/filename
+                photo_url = child.photo.url
+                print(f"Django photo URL: {photo_url}")
+            except Exception as e:
+                print(f"Error getting photo URL: {e}")
+                # Fallback: construct URL manually
+                if hasattr(child.photo, 'name') and child.photo.name:
+                    photo_url = f"/media/{child.photo.name}"
+                    print(f"Manual photo URL: {photo_url}")
+        
+        print(f"Final photo URL: {photo_url}")
+        
         return {
             "name": child.name,
-            "photo": child.photo.url if child.photo else None,
-            "age":child.age
+            "photo": photo_url,
+            "age": child.age
         }
 
 

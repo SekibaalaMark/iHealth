@@ -4,7 +4,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #1a472a;
+  background-color: #1565c0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -140,12 +140,12 @@
 
 @keyframes pulse {
   0% {
-    text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+    text-shadow: 0 0 5px rgba(21, 101, 192, 0.5);
   }
   50% {
-    text-shadow: 0 0 20px rgba(46, 204, 113, 0.8);
+    text-shadow: 0 0 20px rgba(21, 101, 192, 0.8);
   }
   100% {
-    text-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
+    text-shadow: 0 0 5px rgba(21, 101, 192, 0.5);
   }
 } 

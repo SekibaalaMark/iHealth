@@ -5,6 +5,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from "../context/authContext";
+import ChangePasswordModal from '../components/ChangePasswordModal';
 
 const sidebarOptions = [
   { label: "Verify Child", icon: <VerifiedUserIcon />, key: "verify-child" },
@@ -36,6 +37,7 @@ const DashboardHospital = () => {
     error: null,
     loaded: false,
   });
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
   const handleSidebarClick = (key) => {
     setSelected(key);
@@ -74,6 +76,8 @@ const DashboardHospital = () => {
         throw new Error(errorMsg);
       }
       const data = await response.json();
+      console.log('Verify child API response:', data);
+      console.log('Photo field value:', data.photo);
       setVerifyChildState((prev) => ({
         ...prev,
         loading: false,
@@ -194,19 +198,33 @@ const DashboardHospital = () => {
       case "verify-child":
         return (
           <Box sx={{ width: 350 }}>
-            <Typography variant="h4" sx={{ color: '#1565c0', fontWeight: 'bold', mb: 2 }}>
+            <Typography variant="h4" sx={{ color: '#fff', fontWeight: 'bold', mb: 2 }}>
               Verify Child
             </Typography>
             <form onSubmit={handleVerifyChildSubmit}>
               <Box sx={{ mb: 2 }}>
-                <label>Child Number</label>
+                <label style={{ fontWeight: 'bold', color: '#1565c0', marginBottom: 4, display: 'block' }}>Child Number</label>
                 <input
                   type="text"
                   name="child_number"
                   value={verifyChildState.child_number}
                   onChange={handleVerifyChildChange}
                   required
-                  style={{ width: '100%', padding: 8, marginTop: 4 }}
+                  style={{
+                    width: '100%',
+                    padding: 12,
+                    marginTop: 4,
+                    background: '#fff',
+                    border: '2px solid #90caf9',
+                    borderRadius: 8,
+                    color: '#222',
+                    fontSize: 16,
+                    boxShadow: '0 1px 4px rgba(21,101,192,0.05)',
+                    outline: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#1565c0'}
+                  onBlur={e => e.target.style.borderColor = '#90caf9'}
                 />
               </Box>
               {verifyChildState.error && (
@@ -230,6 +248,8 @@ const DashboardHospital = () => {
                   <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     {(() => {
                       const photo = verifyChildState.result.photo;
+                      // If photo is just a filename (e.g., "child_photos/Bankers2025-03-21_155455.png"), 
+                      // construct the full URL. If it's already a full URL, use it as-is.
                       const fullPhotoUrl = photo && !photo.startsWith('http')
                         ? `https://ihealth-vhdl.onrender.com${photo}`
                         : photo;
@@ -238,6 +258,10 @@ const DashboardHospital = () => {
                           src={fullPhotoUrl}
                           alt="Child"
                           style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 12, objectFit: 'contain', boxShadow: '0 2px 8px rgba(21,101,192,0.15)' }}
+                          onError={(e) => {
+                            console.error('Failed to load image:', fullPhotoUrl);
+                            e.target.style.display = 'none';
+                          }}
                         />
                       );
                     })()}
@@ -249,35 +273,66 @@ const DashboardHospital = () => {
         );
       case "create-medical-bill":
         return (
-          <Box sx={{ width: 400 }}>
-            <Typography variant="h4" sx={{ color: '#1565c0', fontWeight: 'bold', mb: 2 }}>
+          <Box sx={{ width: '100%', maxWidth: 600, background: '#fff', borderRadius: 4, boxShadow: 3, p: { xs: 2, sm: 4 }, mx: 'auto' }}>
+            <Typography variant="h4" sx={{ color: '#1565c0', fontWeight: 900, mb: 3, letterSpacing: 1, textShadow: '0 2px 8px rgba(21,101,192,0.10)' }}>
               Create Medical Bill
             </Typography>
             <form onSubmit={handleCreateBillSubmit}>
               <Box sx={{ mb: 2 }}>
-                <label>Child Number</label>
+                <label style={{ fontWeight: 'bold', color: '#1565c0', marginBottom: 4, display: 'block' }}>Child Number</label>
                 <input
                   type="text"
                   name="child_number"
                   value={createBillState.child_number}
                   onChange={handleCreateBillChange}
                   required
-                  style={{ width: '100%', padding: 8, marginTop: 4 }}
+                  style={{
+                    width: '100%',
+                    padding: 12,
+                    marginTop: 4,
+                    background: '#e3f2fd',
+                    border: '2px solid #90caf9',
+                    borderRadius: 8,
+                    color: '#1565c0',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    boxShadow: '0 1px 4px rgba(21,101,192,0.05)',
+                    outline: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#1565c0'}
+                  onBlur={e => e.target.style.borderColor = '#90caf9'}
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
-                <label>Disease Description</label>
+                <label style={{ fontWeight: 'bold', color: '#1565c0', marginBottom: 4, display: 'block' }}>Disease Description</label>
                 <textarea
                   name="disease_description"
                   value={createBillState.disease_description}
                   onChange={handleCreateBillChange}
                   required
                   rows={3}
-                  style={{ width: '100%', padding: 8, marginTop: 4, resize: 'vertical' }}
+                  style={{
+                    width: '100%',
+                    padding: 12,
+                    marginTop: 4,
+                    background: '#e3f2fd',
+                    border: '2px solid #90caf9',
+                    borderRadius: 8,
+                    color: '#1565c0',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    boxShadow: '0 1px 4px rgba(21,101,192,0.05)',
+                    outline: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                    resize: 'vertical',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#1565c0'}
+                  onBlur={e => e.target.style.borderColor = '#90caf9'}
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
-                <label>Hospital Bill (UGX)</label>
+                <label style={{ fontWeight: 'bold', color: '#1565c0', marginBottom: 4, display: 'block' }}>Hospital Bill (UGX)</label>
                 <input
                   type="number"
                   name="hospital_bill"
@@ -285,7 +340,22 @@ const DashboardHospital = () => {
                   onChange={handleCreateBillChange}
                   required
                   min={0}
-                  style={{ width: '100%', padding: 8, marginTop: 4 }}
+                  style={{
+                    width: '100%',
+                    padding: 12,
+                    marginTop: 4,
+                    background: '#e3f2fd',
+                    border: '2px solid #90caf9',
+                    borderRadius: 8,
+                    color: '#1565c0',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    boxShadow: '0 1px 4px rgba(21,101,192,0.05)',
+                    outline: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#1565c0'}
+                  onBlur={e => e.target.style.borderColor = '#90caf9'}
                 />
               </Box>
               {createBillState.error && (
@@ -297,9 +367,20 @@ const DashboardHospital = () => {
               <Button
                 type="submit"
                 variant="contained"
-                color="primary"
                 fullWidth
                 disabled={createBillState.loading}
+                sx={{
+                  mt: 2,
+                  background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  fontSize: 18,
+                  borderRadius: 8,
+                  boxShadow: 2,
+                  '&:hover': {
+                    background: 'linear-gradient(90deg, #1565c0 0%, #1976d2 100%)',
+                  },
+                }}
               >
                 {createBillState.loading ? "Creating..." : "Create Bill"}
               </Button>
@@ -308,8 +389,8 @@ const DashboardHospital = () => {
         );
       case "medical-records":
         return (
-          <Box sx={{ width: '100%', maxWidth: 800 }}>
-            <Typography variant="h4" sx={{ color: '#1565c0', fontWeight: 'bold', mb: 2 }}>
+          <Box sx={{ width: '100%', maxWidth: 1100, minHeight: '60vh', mx: 'auto', p: { xs: 1, sm: 3, md: 4 }, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Typography variant="h4" sx={{ color: '#fff', fontWeight: 'bold', mb: 2 }}>
               Medical Records
             </Typography>
             {medicalRecordsState.loading && <Typography>Loading...</Typography>}
@@ -321,20 +402,20 @@ const DashboardHospital = () => {
               <Box sx={{ overflowX: 'auto', mt: 2 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8 }}>
                   <thead>
-                    <tr style={{ background: '#bbdefb' }}>
-                      <th style={{ padding: 8, border: '1px solid #90caf9' }}>Name</th>
-                      <th style={{ padding: 8, border: '1px solid #90caf9' }}>Date of Visit</th>
-                      <th style={{ padding: 8, border: '1px solid #90caf9' }}>Disease Description</th>
-                      <th style={{ padding: 8, border: '1px solid #90caf9' }}>Hospital Bill (UGX)</th>
+                    <tr style={{ background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)' }}>
+                      <th style={{ padding: 8, border: '1px solid #1976d2', color: '#fff' }}>Name</th>
+                      <th style={{ padding: 8, border: '1px solid #1976d2', color: '#fff' }}>Date of Visit</th>
+                      <th style={{ padding: 8, border: '1px solid #1976d2', color: '#fff' }}>Disease Description</th>
+                      <th style={{ padding: 8, border: '1px solid #1976d2', color: '#fff' }}>Hospital Bill (UGX)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {medicalRecordsState.records.map((rec, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid #e3f2fd' }}>
-                        <td style={{ padding: 8, border: '1px solid #90caf9' }}>{rec.name}</td>
-                        <td style={{ padding: 8, border: '1px solid #90caf9' }}>{rec.date_of_visit}</td>
-                        <td style={{ padding: 8, border: '1px solid #90caf9' }}>{rec.disease_description}</td>
-                        <td style={{ padding: 8, border: '1px solid #90caf9' }}>{rec.hospital_bill}</td>
+                      <tr key={idx} style={{ borderBottom: '1px solid #42a5f5', background: idx % 2 === 0 ? '#f4faff' : '#fff' }}>
+                        <td style={{ padding: 8, border: '1px solid #1976d2', color: '#1565c0', fontWeight: 500 }}>{rec.name}</td>
+                        <td style={{ padding: 8, border: '1px solid #1976d2', color: '#1565c0', fontWeight: 500 }}>{rec.date_of_visit}</td>
+                        <td style={{ padding: 8, border: '1px solid #1976d2', color: '#1565c0', fontWeight: 500 }}>{rec.disease_description}</td>
+                        <td style={{ padding: 8, border: '1px solid #1976d2', color: '#1565c0', fontWeight: 500 }}>{rec.hospital_bill}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -349,21 +430,21 @@ const DashboardHospital = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', background: '#e3f2fd' }}>
+    <Box sx={{ display: 'flex', width: '100vw', height: '100vh', minHeight: '100vh', minWidth: '100vw', background: '#fff' }}>
       {/* Sidebar */}
       <Box
         sx={{
           width: 250,
-          background: '#bbdefb',
+          background: 'linear-gradient(135deg, #0d47a1 0%, #1565c0 100%)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           py: 3,
-          boxShadow: 2,
+          boxShadow: 4,
         }}
       >
         <Box>
-          <Typography variant="h6" align="center" sx={{ mb: 3, color: '#1565c0', fontWeight: 'bold' }}>
+          <Typography variant="h6" align="center" sx={{ mb: 3, color: '#fff', fontWeight: 'bold', letterSpacing: 2, textShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
             HOSPITAL DASHBOARD
           </Typography>
           <List>
@@ -376,38 +457,59 @@ const DashboardHospital = () => {
                 sx={{
                   borderRadius: 2,
                   mb: 1,
-                  background: selected === option.key ? '#e3f2fd' : 'transparent',
-                  color: '#1565c0',
-                  '&:hover': { background: '#e3f2fd' },
+                  background: selected === option.key ? 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)' : 'transparent',
+                  color: selected === option.key ? '#fff' : '#bbdefb',
+                  boxShadow: selected === option.key ? 2 : 0,
+                  '&:hover': { background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)', color: '#fff' },
+                  transition: 'all 0.2s',
                 }}
               >
-                <ListItemIcon sx={{ color: '#1565c0' }}>{option.icon}</ListItemIcon>
+                <ListItemIcon sx={{ color: selected === option.key ? '#fff' : '#90caf9' }}>{option.icon}</ListItemIcon>
                 <ListItemText primary={option.label} />
               </ListItem>
             ))}
           </List>
         </Box>
         <Box sx={{ px: 2 }}>
-          <Divider sx={{ mb: 2 }} />
+          <Divider sx={{ mb: 2, bgcolor: '#90caf9' }} />
           <Button
-            variant="outlined"
-            color="error"
+            variant="contained"
             fullWidth
             startIcon={<LogoutIcon />}
             onClick={logout}
-            sx={{ mb: 1 }}
+            sx={{
+              mb: 1,
+              background: '#d32f2f',
+              color: '#fff',
+              fontWeight: 'bold',
+              '&:hover': { background: '#b71c1c', color: '#fff' },
+              borderColor: 'transparent',
+            }}
           >
             Logout
+          </Button>
+          <Button
+            variant="outlined"
+            fullWidth
+            onClick={() => setChangePasswordOpen(true)}
+            sx={{ mb: 1, color: '#222', background: '#ffeb3b', borderColor: '#fbc02d', fontWeight: 'bold', '&:hover': { background: '#fbc02d', color: '#222', borderColor: '#fbc02d' } }}
+          >
+            Change Password
           </Button>
         </Box>
       </Box>
       {/* Main Content */}
-      <Box sx={{ flex: 1, p: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography variant="h5" sx={{ color: '#1565c0', fontWeight: 'bold', mb: 2 }}>
+      <Box sx={{ flex: 1, p: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: 4, boxShadow: 2 }}>
+        <Typography variant="h5" sx={{ color: '#fff', fontWeight: 'bold', mb: 2 }}>
           {`Welcome, ${username}!`}
         </Typography>
         {renderContent()}
       </Box>
+      <ChangePasswordModal
+        open={changePasswordOpen}
+        onClose={() => setChangePasswordOpen(false)}
+        token={localStorage.getItem('accessToken')}
+      />
     </Box>
   );
 };

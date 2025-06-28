@@ -1,19 +1,20 @@
-.container {
+.login-page {
+  min-height: 100vh;
+  width: 100vw;
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 100vh;
-  max-width: 450px;
-  background: linear-gradient(to right, #f0f4f8, #d9e2ec);
+  justify-content: center;
+  background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
 }
 
 .login-container {
-  width: 100%; /* Set the width to half the page */
-  padding: 40px; /* Increase padding for better spacing */
-  border-radius: 10px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 0.5s ease-in-out;
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(21,101,192,0.10);
+  padding: 40px 30px;
+  margin: 0 auto;
 }
 
 .login-form {
@@ -29,7 +30,7 @@
   border-radius: 6px;
   width: 100%;
   color: black;
-  background-color: #e6eee7; /* Optional: Set background color for input */
+  background-color: #e3f0fc; /* soft blue background */
   transition: box-shadow 0.3s ease-in-out;
 }
 
@@ -44,7 +45,7 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  background: green;
+  background: #1565c0;
   color: #fff;
   font-weight: bold;
   transition:
@@ -53,7 +54,7 @@
 }
 
 .login-btn:hover {
-  background: green;
+  background: #0d47a1;
   transform: scale(1.05);
 }
 
@@ -66,12 +67,12 @@
 .redirect-text a {
   text-decoration: none;
   font-weight: bold;
-  color: green;
+  color: #1565c0;
   transition: color 0.3s ease-in-out;
 }
 
 .redirect-text a:hover {
-  color: green;
+  color: #0d47a1;
 }
 
 .input-wrapper {
