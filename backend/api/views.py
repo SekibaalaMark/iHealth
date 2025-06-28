@@ -21,6 +21,8 @@ from .serializers import UserRegistrationSerializer
 from .models import CustomUser
 from django.conf import settings
 import logging
+from django.db.models import Count
+from django.db.models.functions import Lower
 
 logger = logging.getLogger(__name__)
 
@@ -380,11 +382,6 @@ class MedicalRecordListAPIView(APIView):
         return Response(serializer.data)
 
 
-from django.db.models import Count
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-
 class YearDiseaseStatsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -396,19 +393,33 @@ class YearDiseaseStatsAPIView(APIView):
 
         center_number = user.center_number
 
-        # Filter by child's center number and group by disease
+        # Filter by child's center number and group by disease (case-insensitive)
         stats = (
             MedicalRecord.objects
             .filter(child__center_number=center_number)
             .values('disease_description')
-            .annotate(count=Count('disease_description'))
+            .annotate(
+                normalized_disease=Lower('disease_description'),
+                count=Count('disease_description')
+            )
+            .values('normalized_disease')
+            .annotate(count=Count('normalized_disease'))
             .order_by('-count')
         )
 
+        # Format the response to match the expected structure
+        formatted_stats = [
+            {
+                'disease_description': item['normalized_disease'].title(),  # Capitalize first letter
+                'count': item['count']
+            }
+            for item in stats
+        ]
+
         return Response({
             "center": center_number,
-            "total_diseases_reported": sum(item['count'] for item in stats),
-            "disease_statistics": stats
+            "total_diseases_reported": sum(item['count'] for item in formatted_stats),
+            "disease_statistics": formatted_stats
         })
 
 
@@ -429,19 +440,33 @@ class MonthDiseaseStatsAPIView(APIView):
 
         center_number = user.center_number
 
-        # Filter by child's center number and group by disease
+        # Filter by child's center number and group by disease (case-insensitive)
         stats = (
             MedicalRecord.objects
             .filter(child__center_number=center_number)
             .values('disease_description')
-            .annotate(count=Count('disease_description'))
+            .annotate(
+                normalized_disease=Lower('disease_description'),
+                count=Count('disease_description')
+            )
+            .values('normalized_disease')
+            .annotate(count=Count('normalized_disease'))
             .order_by('-count')
         )
 
+        # Format the response to match the expected structure
+        formatted_stats = [
+            {
+                'disease_description': item['normalized_disease'].title(),  # Capitalize first letter
+                'count': item['count']
+            }
+            for item in stats
+        ]
+
         return Response({
             "center": center_number,
-            "total_diseases_reported": sum(item['count'] for item in stats),
-            "disease_statistics": stats
+            "total_diseases_reported": sum(item['count'] for item in formatted_stats),
+            "disease_statistics": formatted_stats
         })
 
 

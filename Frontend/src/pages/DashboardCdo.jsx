@@ -186,6 +186,24 @@ const DashboardCdo = () => {
         throw new Error(errorMsg);
       }
       const data = await response.json();
+      
+      // Normalize disease names as a fallback (in case backend doesn't handle it)
+      if (data.disease_statistics) {
+        const normalizedStats = {};
+        data.disease_statistics.forEach(stat => {
+          const normalizedName = stat.disease_description.toLowerCase().trim();
+          if (normalizedName in normalizedStats) {
+            normalizedStats[normalizedName].count += stat.count;
+          } else {
+            normalizedStats[normalizedName] = {
+              disease_description: stat.disease_description.charAt(0).toUpperCase() + stat.disease_description.slice(1).toLowerCase(),
+              count: stat.count
+            };
+          }
+        });
+        data.disease_statistics = Object.values(normalizedStats);
+      }
+      
       setAnalysisState({ loading: false, error: null, data });
     } catch (err) {
       setAnalysisState({ loading: false, error: err.message || "Failed to fetch analysis data", data: null });
