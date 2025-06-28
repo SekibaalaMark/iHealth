@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Container, Typography, Box } from "@mui/material";
+import bloodPressureImg from '../assets/blood_pressure_check.jpg';
 
 const CoverPage = () => {
   const navigate = useNavigate();
@@ -25,8 +26,8 @@ const CoverPage = () => {
       {/* Background Image */}
       <Box
         component="img"
-        src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1600&h=900&fit=crop"
-        alt="Graduation"
+        src={bloodPressureImg}
+        alt="Blood Pressure Check"
         sx={{
           position: "absolute",
           top: 0,
@@ -73,7 +74,7 @@ const CoverPage = () => {
             textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
           }}
         >
-          Welcome to Academic Issue Tracking
+          Mobile CDO Health
         </Typography>
 
         <Typography
@@ -85,7 +86,7 @@ const CoverPage = () => {
             textShadow: "1px 1px 3px rgba(0,0,0,0.5)",
           }}
         >
-          Streamline your academic issue resolution process.
+          Access Medication Anytime
         </Typography>
 
         <Button
