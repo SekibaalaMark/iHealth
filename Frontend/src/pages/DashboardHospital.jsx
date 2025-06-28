@@ -248,11 +248,32 @@ const DashboardHospital = () => {
                   <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     {(() => {
                       const photo = verifyChildState.result.photo;
-                      // If photo is just a filename (e.g., "child_photos/Bankers2025-03-21_155455.png"), 
-                      // construct the full URL. If it's already a full URL, use it as-is.
-                      const fullPhotoUrl = photo && !photo.startsWith('http')
-                        ? `https://ihealth-vhdl.onrender.com${photo}`
-                        : photo;
+                      console.log('Photo URL from API:', photo);
+                      
+                      // Handle different photo URL formats
+                      let fullPhotoUrl = photo;
+                      
+                      if (photo) {
+                        // If it's already a full URL, use it as-is
+                        if (photo.startsWith('http')) {
+                          fullPhotoUrl = photo;
+                        }
+                        // If it starts with /media/, construct the full URL
+                        else if (photo.startsWith('/media/')) {
+                          fullPhotoUrl = `https://ihealth-vhdl.onrender.com${photo}`;
+                        }
+                        // If it's just a filename, construct the full URL
+                        else if (photo.includes('child_photos/')) {
+                          fullPhotoUrl = `https://ihealth-vhdl.onrender.com/media/${photo}`;
+                        }
+                        // Fallback: try to construct URL
+                        else {
+                          fullPhotoUrl = `https://ihealth-vhdl.onrender.com/media/child_photos/${photo}`;
+                        }
+                      }
+                      
+                      console.log('Constructed photo URL:', fullPhotoUrl);
+                      
                       return (
                         <img
                           src={fullPhotoUrl}
@@ -260,7 +281,11 @@ const DashboardHospital = () => {
                           style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 12, objectFit: 'contain', boxShadow: '0 2px 8px rgba(21,101,192,0.15)' }}
                           onError={(e) => {
                             console.error('Failed to load image:', fullPhotoUrl);
+                            console.error('Original photo value:', photo);
                             e.target.style.display = 'none';
+                          }}
+                          onLoad={() => {
+                            console.log('Image loaded successfully:', fullPhotoUrl);
                           }}
                         />
                       );
