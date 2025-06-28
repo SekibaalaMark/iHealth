@@ -177,80 +177,82 @@ const Register = () => {
   };
 
   return (
-    <div className="register-container">
-      <div className="register-header">Register</div>
-      <form className="register-form" onSubmit={handleSubmit}>
-        <label>Email* (Gmail only)</label>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-          placeholder="example@gmail.com"
-        />
-        <small className="help-text">Only Gmail accounts are allowed</small>
+    <div className="register-page">
+      <div className="register-container">
+        <div className="register-header">Register</div>
+        <form className="register-form" onSubmit={handleSubmit}>
+          <label>Email* (Gmail only)</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            placeholder="example@gmail.com"
+          />
+          <small className="help-text">Only Gmail accounts are allowed</small>
 
-        <label>Username*</label>
-        <input
-          type="text"
-          name="username"
-          value={formData.username}
-          onChange={handleChange}
-          required
-        />
+          <label>Username*</label>
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            required
+          />
 
-        <label>Password* (min 8 characters)</label>
-        <input
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-          minLength="8"
-        />
+          <label>Password* (min 8 characters)</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            minLength="8"
+          />
 
-        <label>Confirm Password*</label>
-        <input
-          type="password"
-          name="password2"
-          value={formData.password2}
-          onChange={handleChange}
-          required
-          minLength="8"
-        />
+          <label>Confirm Password*</label>
+          <input
+            type="password"
+            name="password2"
+            value={formData.password2}
+            onChange={handleChange}
+            required
+            minLength="8"
+          />
 
-        <label>User Role*</label>
-        <select 
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select</option>
-          <option value="CDO_HEALTH">CDO_HEALTH</option>
-          <option value="Hospital">Hospital</option>
-        </select>
+          <label>User Role*</label>
+          <select 
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select</option>
+            <option value="CDO_HEALTH">CDO_HEALTH</option>
+            <option value="Hospital">Hospital</option>
+          </select>
 
-        <label>Center Number*</label>
-        <input
-          type="text"
-          name="center_number"
-          value={formData.center_number}
-          onChange={handleChange}
-          required
-        />
+          <label>Center Number*</label>
+          <input
+            type="text"
+            name="center_number"
+            value={formData.center_number}
+            onChange={handleChange}
+            required
+          />
 
-        {error && <div className="error-message">{error}</div>}
-        
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? "Registering..." : "Register"}
-        </button>
-        
-        <div className="register-footer">
-          Already have an account? <a href="/login">Login here</a>
-        </div>
-      </form>
+          {error && <div className="error-message">{error}</div>}
+          
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? "Registering..." : "Register"}
+          </button>
+          
+          <div className="register-footer">
+            Already have an account? <a href="/login">Login here</a>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
