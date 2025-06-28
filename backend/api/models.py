@@ -38,7 +38,7 @@ class Child(models.Model):
     name = models.CharField(max_length=100)
     child_number = models.CharField(max_length=20, unique=True)
     center_number = models.CharField(max_length=6)
-    photo = models.ImageField(upload_to='child_photos/')
+    photo = models.ImageField(upload_to='media/child_photos/')
     date_added = models.DateTimeField(auto_now_add=True)
     
     date_of_birth = models.DateField()  # New field for date of birth
